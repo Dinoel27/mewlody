@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebXR Hand Tracking with Voice Input</title>
+    <title>WebXR App</title>
     <style>
         body {
             margin: 0;
@@ -16,6 +15,7 @@
             align-items: center;
             height: 100vh;
         }
+
         #message {
             position: absolute;
             top: 10px;
@@ -24,14 +24,36 @@
             background: rgba(0, 0, 0, 0.5);
             border-radius: 5px;
         }
+
+        #noteDisplay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            font-size: 24px;
+        }
+
+        #instrumentList {
+            position: absolute;
+            top: 50px;
+            left: 20px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            font-size: 18px;
+        }
+
         canvas {
             display: block;
         }
     </style>
 </head>
 <body>
-    <div id="message">Say "ta-ra-ta-ra-ta" to create a shape</div>
-    <!-- <script src="./app.js"></script> Path to your bundled JavaScript -->
+    <div id="message"></div>
+    <div id="noteDisplay">Detected Note: None</div>
+    <div id="instrumentList">Instruments:</div>
     <script type="module" src="app.js"></script>
 </body>
 </html>
