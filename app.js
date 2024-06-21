@@ -1,6 +1,6 @@
-import * as THREE from 'https://cdn.skypack.dev/three@0.135.0';
-import { VRButton } from 'https://cdn.skypack.dev/three@0.135.0/examples/jsm/webxr/VRButton.js';
-import { XRHandModelFactory } from 'https://cdn.skypack.dev/three@0.135.0/examples/jsm/webxr/XRHandModelFactory.js';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.module.js';
+import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.135.0/examples/jsm/webxr/VRButton.js';
+import { XRHandModelFactory } from 'https://cdn.jsdelivr.net/npm/three@0.135.0/examples/jsm/webxr/XRHandModelFactory.js';
 
 const toneMappings = {
     piano: {
