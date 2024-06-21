@@ -2,14 +2,6 @@ import * as THREE from 'three';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
 
-let scene, camera, renderer, analyser, dataArray;
-const shapes = [];
-let audioContext;
-const activeInstruments = new Map();
-let voiceWaveform;
-const voiceWaveformData = [];
-let isVoiceInput = false;
-
 const toneMappings = {
     piano: {
         A: { color: 0xff0000, shape: THREE.SphereGeometry },
@@ -106,11 +98,18 @@ const toneMappings = {
         B: { color: 0xffe4e1, shape: THREE.BoxGeometry },
         C: { color: 0xffd700, shape: THREE.ConeGeometry },
         D: { color: 0xadff2f, shape: THREE.CylinderGeometry },
-                E: { color: 0x1e90ff, shape: THREE.TorusGeometry },
+        E: { color: 0x1e90ff, shape: THREE.TorusGeometry },
         F: { color: 0xee82ee, shape: THREE.BoxGeometry },
         G: { color: 0xff69b4, shape: THREE.SphereGeometry }
     }
 };
+
+let scene, camera, renderer, analyser, dataArray;
+const shapes = [];
+let audioContext;
+const activeInstruments = new Map();
+let voiceWaveform;
+const voiceWaveformData = [];
 
 function init() {
     scene = new THREE.Scene();
@@ -162,8 +161,14 @@ function init() {
     setupAudioProcessing();
 
     // Create voice waveform line
-    createVoiceWaveform();
+    const voiceWaveformGeometry = new THREE.BufferGeometry();
+    const voiceWaveformMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const positions = new Float32Array(360 * 3);
+    voiceWaveformGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    voiceWaveform = new THREE.Line(voiceWaveformGeometry, voiceWaveformMaterial);
+    scene.add(voiceWaveform);
 
+    createVoiceWaveform()
     // Start the animation loop
     animate();
 }
@@ -201,9 +206,7 @@ function detectPitch() {
             const pitch = ac;
             handlePitchDetected(pitch);
         }
-        if (isVoiceInput) {
-            updateVoiceWaveform(pitchBuffer);
-        }
+        updateVoiceWaveform(pitchBuffer);
         requestAnimationFrame(updatePitch);
     }
 
@@ -315,6 +318,7 @@ function addShape(color, GeometryType, amplitude) {
     } else if (GeometryType === THREE.CylinderGeometry) {
         geometry = new GeometryType(size, size, size * 2, 32);
     } else if (GeometryType === THREE.BoxGeometry) {
+    } else if (GeometryType === THREE.BoxGeometry) {
         geometry = new GeometryType(size, size, size);
     } else {
         console.error("Invalid Geometry Type");
@@ -405,14 +409,13 @@ function onHandMove(event) {
 
 function handleVoiceButtonClick(event) {
     console.log('Voice Button Clicked', event);
-    isVoiceInput = true;
 }
 
 function initVoiceRecognition() {
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
-
+        
         recognition.start();
         recognition.onresult = function(event) {
             const result = event.results[0][0].transcript;
