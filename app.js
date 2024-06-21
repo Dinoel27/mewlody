@@ -1,3 +1,7 @@
+import * as THREE from 'three';
+import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
+import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
+
 const toneMappings = {
     piano: {
         A: { color: 0xff0000, shape: THREE.SphereGeometry },
