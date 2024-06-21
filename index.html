@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>WebXR App</title>
- <style>
+    <style>
         body {
             margin: 0;
             overflow: hidden;
@@ -51,12 +51,9 @@
     </style>
 </head>
 <body>
-    <div id="detector"></div> <!-- Detector element for pitch detection -->
-    <div id="instrumentList">Instruments:<br></div>
-    <div id="noteDisplay">Detected Note:</div>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/examples/js/vr/VRButton.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/examples/jsm/webxr/XRHandModelFactory.js"></script>
-    <script src="app.js"></script>
+    <div id="message"></div>
+    <div id="noteDisplay">Detected Note: None</div>
+    <div id="instrumentList">Instruments:</div>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
