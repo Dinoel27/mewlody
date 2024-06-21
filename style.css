@@ -19,3 +19,13 @@ body {
     background: rgba(0, 0, 0, 0.5);
     border-radius: 5px;
 }
+
+#noteDisplay {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    font-size: 24px;
+}
