@@ -2,20 +2,114 @@ import * as THREE from 'three';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
 
-let scene, camera, renderer, audioContext, analyser, dataArray;
-const shapes = [];
-
-// Define instruments and their corresponding sounds
-const instruments = {
-    trumpet: 'sounds/trumpet.mp3',
-    guitar: 'sounds/guitar.mp3',
-    piano: 'sounds/piano.mp3', 
-    flute: 'sounds/flute.mp3',
-    drum: 'sounds/drum.mp3'
+const toneMappings = {
+    piano: {
+        A: { color: 0xff0000, shape: THREE.SphereGeometry },
+        B: { color: 0xffa500, shape: THREE.BoxGeometry },
+        C: { color: 0xffff00, shape: THREE.ConeGeometry },
+        D: { color: 0x008000, shape: THREE.CylinderGeometry },
+        E: { color: 0x0000ff, shape: THREE.TorusGeometry },
+        F: { color: 0x4b0082, shape: THREE.BoxGeometry },
+        G: { color: 0xee82ee, shape: THREE.SphereGeometry }
+    },
+    guitar: {
+        A: { color: 0xff5555, shape: THREE.SphereGeometry },
+        B: { color: 0xffbb55, shape: THREE.BoxGeometry },
+        C: { color: 0xffff77, shape: THREE.ConeGeometry },
+        D: { color: 0x55aa55, shape: THREE.CylinderGeometry },
+        E: { color: 0x5555ff, shape: THREE.TorusGeometry },
+        F: { color: 0xaa55aa, shape: THREE.BoxGeometry },
+        G: { color: 0xee55ee, shape: THREE.SphereGeometry }
+    },
+    drums: {
+        A: { color: 0x8b0000, shape: THREE.SphereGeometry },
+        B: { color: 0xff6347, shape: THREE.BoxGeometry },
+        C: { color: 0xffd700, shape: THREE.ConeGeometry },
+        D: { color: 0x32cd32, shape: THREE.CylinderGeometry },
+        E: { color: 0x4169e1, shape: THREE.TorusGeometry },
+        F: { color: 0x8a2be2, shape: THREE.BoxGeometry },
+        G: { color: 0xda70d6, shape: THREE.SphereGeometry }
+    },
+    flute: {
+        A: { color: 0x8b008b, shape: THREE.SphereGeometry },
+        B: { color: 0xff69b4, shape: THREE.BoxGeometry },
+        C: { color: 0xffc0cb, shape: THREE.ConeGeometry },
+        D: { color: 0x00ff00, shape: THREE.CylinderGeometry },
+        E: { color: 0x00ced1, shape: THREE.TorusGeometry },
+        F: { color: 0x800080, shape: THREE.BoxGeometry },
+        G: { color: 0xffb6c1, shape: THREE.SphereGeometry }
+    },
+    bass: {
+        A: { color: 0xff8c00, shape: THREE.SphereGeometry },
+        B: { color: 0xff4500, shape: THREE.BoxGeometry },
+        C: { color: 0xffffe0, shape: THREE.ConeGeometry },
+        D: { color: 0x006400, shape: THREE.CylinderGeometry },
+        E: { color: 0x00008b, shape: THREE.TorusGeometry },
+        F: { color: 0x800000, shape: THREE.BoxGeometry },
+        G: { color: 0x8b4513, shape: THREE.SphereGeometry }
+    },
+    violin: {
+        A: { color: 0x7cfc00, shape: THREE.SphereGeometry },
+        B: { color: 0x20b2aa, shape: THREE.BoxGeometry },
+        C: { color: 0xffa07a, shape: THREE.ConeGeometry },
+        D: { color: 0x5f9ea0, shape: THREE.CylinderGeometry },
+        E: { color: 0x4682b4, shape: THREE.TorusGeometry },
+        F: { color: 0xdc143c, shape: THREE.BoxGeometry },
+        G: { color: 0xff00ff, shape: THREE.SphereGeometry }
+    },
+    saxophone: {
+        A: { color: 0xffd700, shape: THREE.SphereGeometry },
+        B: { color: 0xcd5c5c, shape: THREE.BoxGeometry },
+        C: { color: 0xff4500, shape: THREE.ConeGeometry },
+        D: { color: 0x6b8e23, shape: THREE.CylinderGeometry },
+        E: { color: 0x4682b4, shape: THREE.TorusGeometry },
+        F: { color: 0xdda0dd, shape: THREE.BoxGeometry },
+        G: { color: 0xda70d6, shape: THREE.SphereGeometry }
+    },
+    trumpet: {
+        A: { color: 0xff7f50, shape: THREE.SphereGeometry },
+        B: { color: 0xf0e68c, shape: THREE.BoxGeometry },
+        C: { color: 0xff6347, shape: THREE.ConeGeometry },
+        D: { color: 0x9acd32, shape: THREE.CylinderGeometry },
+        E: { color: 0x4682b4, shape: THREE.TorusGeometry },
+        F: { color: 0x800080, shape: THREE.BoxGeometry },
+        G: { color: 0xff69b4, shape: THREE.SphereGeometry }
+    },
+    clarinet: {
+        A: { color: 0xdda0dd, shape: THREE.SphereGeometry },
+        B: { color: 0xb0e0e6, shape: THREE.BoxGeometry },
+        C: { color: 0xdda0dd, shape: THREE.ConeGeometry },
+        D: { color: 0x90ee90, shape: THREE.CylinderGeometry },
+        E: { color: 0x4682b4, shape: THREE.TorusGeometry },
+        F: { color: 0xd2691e, shape: THREE.BoxGeometry },
+        G: { color: 0xc71585, shape: THREE.SphereGeometry }
+    },
+    cello: {
+        A: { color: 0xcd853f, shape: THREE.SphereGeometry },
+        B: { color: 0xffb6c1, shape: THREE.BoxGeometry },
+        C: { color: 0xffdab9, shape: THREE.ConeGeometry },
+        D: { color: 0xe9967a, shape: THREE.CylinderGeometry },
+        E: { color: 0x4682b4, shape: THREE.TorusGeometry },
+        F: { color: 0xa52a2a, shape: THREE.BoxGeometry },
+        G: { color: 0xdc143c, shape: THREE.SphereGeometry }
+    },
+    harp: {
+        A: { color: 0xe6e6fa, shape: THREE.SphereGeometry },
+        B: { color: 0xffe4e1, shape: THREE.BoxGeometry },
+        C: { color: 0xffd700, shape: THREE.ConeGeometry },
+        D: { color: 0xadff2f, shape: THREE.CylinderGeometry },
+        E: { color: 0x1e90ff, shape: THREE.TorusGeometry },
+        F: { color: 0xee82ee, shape: THREE.BoxGeometry },
+        G: { color: 0xff69b4, shape: THREE.SphereGeometry }
+    }
 };
 
-let currentSound = null; // Track the current sound for repetitive playback
-let isSoundPlaying = false; // Track if sound is currently playing
+let scene, camera, renderer, analyser, dataArray;
+const shapes = [];
+let audioContext;
+const activeInstruments = new Map();
+let voiceWaveform;
+const voiceWaveformData = [];
 
 function init() {
     scene = new THREE.Scene();
@@ -24,12 +118,11 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Check for WebXR support
+    // Initialize WebXR if available
     if (navigator.xr) {
         document.body.appendChild(VRButton.createButton(renderer));
         renderer.xr.enabled = true;
 
-        // Hand tracking setup
         const handModelFactory = new XRHandModelFactory();
         const hand1 = renderer.xr.getHand(0);
         hand1.add(handModelFactory.createHandModel(hand1));
@@ -41,19 +134,20 @@ function init() {
         hand1.addEventListener('squeezeend', onHandGestureEnd);
         hand1.addEventListener('handtracking', onHandMove);
 
-        // Button for voice initiation
         const voiceButton = document.createElement('button');
         voiceButton.textContent = 'Start Voice Command';
         voiceButton.style.position = 'absolute';
         voiceButton.style.top = '20px';
         voiceButton.style.left = '20px';
-        voiceButton.addEventListener('click', handleVoiceButtonClick); // Call handleVoiceButtonClick on button click
+        voiceButton.addEventListener('click', handleVoiceButtonClick);
         document.body.appendChild(voiceButton);
 
-        // Initialize voice recognition
         initVoiceRecognition();
     } else {
-        document.getElementById('message').innerText = 'WebXR not supported. Running in non-VR mode.';
+        const messageElement = document.createElement('div');
+        messageElement.id = 'message';
+        messageElement.innerText = 'WebXR not supported. Running in non-VR mode.';
+        document.body.appendChild(messageElement);
         console.log('WebXR not supported. Running in non-VR mode.');
     }
 
@@ -63,274 +157,273 @@ function init() {
     light.position.set(1, 1, 1).normalize();
     scene.add(light);
 
+    // Setup audio processing and pitch detection
     setupAudioProcessing();
 
+    // Create voice waveform line
+    const voiceWaveformGeometry = new THREE.BufferGeometry();
+    const voiceWaveformMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const positions = new Float32Array(360 * 3);
+    voiceWaveformGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    voiceWaveform = new THREE.Line(voiceWaveformGeometry, voiceWaveformMaterial);
+    scene.add(voiceWaveform);
+
+    createVoiceWaveform()
+    // Start the animation loop
     animate();
 }
 
 function setupAudioProcessing() {
-  audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  analyser = audioContext.createAnalyser();
-  analyser.fftSize = 256; // Set the FFT size (frequency bin count)
-  const bufferLength = analyser.frequencyBinCount;
-  dataArray = new Uint8Array(bufferLength); // Initialize dataArray for frequency data
+    window.addEventListener('mousedown', initAudioContext, { once: true });
 
-  navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(stream => {
-          const source = audioContext.createMediaStreamSource(stream);
-          source.connect(analyser);
-      })
-      .catch(err => {
-          console.error('Error accessing microphone:', err);
-      });
-}
+    function initAudioContext() {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        const bufferLength = analyser.fftSize;
+        dataArray = new Uint8Array(bufferLength);
 
-function getAudioData() {
-  if (!analyser) {
-      console.error('Analyser not initialized.');
-      return [];
-  }
-
-  analyser.getByteFrequencyData(dataArray);
-
-  return Array.from(dataArray);
-}
-
-let recognition; // Declare recognition globally
-
-function startVoiceRecognition() {
-    if (!recognition) {
-        console.error('Recognition object is not initialized.');
-        return;
-    }
-    recognition.start();
-}
-
-
-function initVoiceRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        console.error('Web Speech API is not supported in this browser.');
-        return;
-    }
-
-    recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    recognition.onresult = function(event) {
-        const last = event.results.length - 1;
-        const command = event.results[last][0].transcript.trim().toLowerCase();
-
-        console.log('Voice command received:', command);
-
-        if (command === 'yes') {
-            createVisualsFromAudio('trumpet');
-        } else if (command === 'yap' || command === 'yep') {
-            createVisualsFromAudio('guitar');
-        } else if (command === 'boom') {
-            createVisualsFromAudio('drum');
-        }else if (command === 'whoosh'){
-          createVisualsFromAudio('flute');
-        } else if (command === 'stop' || command === 'halt') {
-          stopAllSounds();
-      }
-    };
-
-    recognition.onerror = function(event) {
-        console.error('Speech recognition error:', event.error);
-    };
-
-    recognition.onend = function() {
-        recognition.start(); // Restart recognition after it ends
-    };
-
-    // Note: Don't start recognition here initially
-}
-
-
-function stopAllSounds() {
-  
-  if (currentSound) {
-      currentSound.stop(); // Stop the currently playing sound
-      currentSound = null; // Reset the current sound variable
-      isSoundPlaying = false; // Reset the sound playing state
-  }
-}
-
-function handleVoiceButtonClick() {
-    startVoiceRecognition(); // Call startVoiceRecognition function when voiceButton is clicked
-}
-
-function createVisualsFromAudio(instrument) {
-  // Check if audio data is available
-  const audioData = getAudioData();
-  if (!audioData || audioData.length === 0) {
-      console.warn('No audio data available.');
-      return;
-  }
-
-  // Clear previous shapes
-  shapes.forEach(shape => {
-      scene.remove(shape);
-  });
-  shapes.length = 0;
-
-  // Generate up to 5 shapes
-  const numShapes = Math.min(audioData.length, 5); // Limit to 5 shapes
-
-  for (let i = 0; i < numShapes; i++) {
-      const averageFrequency = audioData[i] / 255 * 360;
-      const color = new THREE.Color(`hsl(${averageFrequency}, 100%, 50%)`);
-      const shape = new THREE.Mesh(
-          new THREE.SphereGeometry(0.1),
-          new THREE.MeshPhongMaterial({ color })
-      );
-      shape.position.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
-      shape.userData = { color, size: 0.1, instrument };
-      shapes.push(shape);
-      scene.add(shape);
-  }
-
-  // Play sound based on the specified instrument
-  playSound(instrument);
-}
-
-function playSound(instrument) {
-  if (!audioContext) {
-      console.error('AudioContext is not initialized.');
-      return;
-  }
-
-  // Check if there's already a sound playing, and stop it
-  if (currentSound) {
-      currentSound.stop();
-  }
-
-  // Create a new buffer source node
-  const source = audioContext.createBufferSource();
-
-  // Load the audio file
-  fetch(instruments[instrument])
-      .then(response => response.arrayBuffer())
-      .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-      .then(audioBuffer => {
-          source.buffer = audioBuffer;
-          source.loop = false; // Enable looping
-
-          // Set playbackRate here
-          source.playbackRate.value = 1.0; // Default playback rate
-
-          source.connect(audioContext.destination);
-          source.start(); // Start playing
-
-          // Track the current sound for later control
-          currentSound = source;
-          isSoundPlaying = true;
-      })
-      .catch(err => {
-          console.error('Error loading audio file:', err);
-      });
-}
-
-
-let selectedShape = null;
-let initialIntersectionPoint = new THREE.Vector3();
-let initialShapeSize = 0;
-
-function onHandGestureStart(event) {
-    const hand = event.target;
-    const intersections = getIntersections(hand);
-    if (intersections.length > 0) {
-        selectedShape = intersections[0].object;
-        initialIntersectionPoint.copy(intersections[0].point);
-        initialShapeSize = selectedShape.scale.x;
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                detectPitch();
+            })
+            .catch(err => {
+                console.error('Error accessing microphone:', err);
+            });
     }
 }
 
-function onHandGestureEnd(event) {
-    selectedShape = null;
-}
+function detectPitch() {
+    const bufferLength = analyser.fftSize;
+    const pitchBuffer = new Float32Array(bufferLength);
 
-function onHandMove(event) {
-    if (selectedShape) {
-        const hand = event.target;
-        const intersections = getIntersections(hand);
-        if (intersections.length > 0) {
-            const currentIntersectionPoint = intersections[0].point;
-            const delta = currentIntersectionPoint.clone().sub(initialIntersectionPoint);
-            const newSize = initialShapeSize + delta.length() * 2; // Adjust scale based on hand movement
-            selectedShape.scale.set(newSize, newSize, newSize);
-            selectedShape.userData.size = newSize;
-            updateAudioProperties(selectedShape);
+    function updatePitch() {
+        analyser.getFloatTimeDomainData(pitchBuffer);
+        const ac = autoCorrelate(pitchBuffer, audioContext.sampleRate);
+        if (ac !== -1) {
+            const pitch = ac;
+            handlePitchDetected(pitch);
         }
+        updateVoiceWaveform(pitchBuffer);
+        requestAnimationFrame(updatePitch);
     }
+
+    updatePitch();
 }
 
-function getIntersections(hand) {
-    const tempMatrix = new THREE.Matrix4().identity().extractRotation(hand.matrixWorld);
-    const raycaster = new THREE.Raycaster();
-    raycaster.ray.origin.setFromMatrixPosition(hand.matrixWorld);
-    raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-    return raycaster.intersectObjects(scene.children, true);
+function autoCorrelate(buffer, sampleRate) {
+    const SIZE = buffer.length;
+    const MAX_SAMPLES = Math.floor(SIZE / 2);
+    let best_offset = -1;
+    let best_correlation = 0;
+    let rms = 0;
+
+    for (let i = 0; i < SIZE; i++) {
+        const val = buffer[i];
+        rms += val * val;
+    }
+    rms = Math.sqrt(rms / SIZE);
+
+    if (rms < 0.01) {
+        return -1;
+    }
+
+    let lastCorrelation = 1;
+    for (let offset = 0; offset < MAX_SAMPLES; offset++) {
+        let correlation = 0;
+
+        for (let i = 0; i < MAX_SAMPLES; i++) {
+            correlation += Math.abs((buffer[i]) - (buffer[i + offset]));
+        }
+        correlation = 1 - (correlation / MAX_SAMPLES);
+
+        if (correlation > 0.9 && correlation > lastCorrelation) {
+            best_correlation = correlation;
+            best_offset = offset;
+        }
+
+        lastCorrelation = correlation;
+    }
+
+    if (best_correlation > 0.01) {
+        const shift = (best_correlation - lastCorrelation) / 2;
+        return sampleRate / (best_offset + shift);
+    }
+
+    return -1;
 }
 
-function updateAudioProperties(shape) {
-    const { size, color, instrument } = shape.userData;
+function handlePitchDetected(pitch) {
+    const note = noteFromPitch(pitch);
+    const noteName = noteStrings[note % 12];
+    const instrument = detectInstrument();
 
-    if (!color) {
-        console.error('Shape color is undefined in userData.');
+    if (!toneMappings[instrument] || !toneMappings[instrument][noteName]) {
+        console.log('Detected Note: Unidentified or invalid instrument/note');
+        document.getElementById('noteDisplay').innerText = `Detected Note: Unidentified`;
         return;
     }
 
-    const hsl = color.getHSL({}); // Get HSL values
+    console.log(`Detected Note: ${noteName} (Instrument: ${instrument})`);
+    activeInstruments.set(instrument, noteName);
+    updateInstrumentList();
+    document.getElementById('noteDisplay').innerText = `Detected Note: ${noteName} (Instruments: ${Array.from(activeInstruments.keys()).join(', ')})`;
+    const { color, shape } = toneMappings[instrument][noteName];
+    const amplitude = calculateAmplitude(dataArray);
+    addShape(color, shape, amplitude);
+}
 
-    // Example: Adjust volume based on shape size
-    const volume = size; // Adjust volume based on shape size
+function detectInstrument() {
+    const averageFrequency = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+    const maxFrequency = Math.max(...dataArray);
 
-    // Example: Adjust pitch based on shape color
-    const pitch = Math.max(0.5, Math.min(2.0, hsl.h)); // Adjust pitch within the range of 0.5 to 2.0
-
-
-    // Example: Adjust audio playback based on instrument
-    if (!isSoundPlaying) {
-        playSound(instrument);
+    if (maxFrequency > 8000) {
+        return 'flute';
+    } else if (maxFrequency > 6000) {
+        return 'trumpet';
+    } else if (maxFrequency > 4000) {
+        return 'violin';
+    } else if (maxFrequency > 2000) {
+        return 'saxophone';
+    } else if (averageFrequency > 180) {
+        return 'guitar';
+    } else if (averageFrequency > 140) {
+        return 'drums';
+    } else if (averageFrequency > 100) {
+        return 'bass';
+    } else if (averageFrequency > 60) {
+        return 'cello';
     } else {
-        currentSound.volume = volume; // Adjust volume dynamically
-        currentSound.playbackRate = pitch; // Adjust playback rate based on pitch
+        return 'piano';
     }
 }
 
-function animate() {
-    renderer.setAnimationLoop(() => {
-        update();
-        render();
+function calculateAmplitude(dataArray) {
+    return dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+}
+
+function addShape(color, GeometryType, amplitude) {
+    const material = new THREE.MeshStandardMaterial({ color });
+    const size = 0.1 + amplitude * 0.5;
+    let geometry;
+
+    if (GeometryType === THREE.TorusGeometry) {
+        geometry = new GeometryType(size, size / 4, 16, 100);
+    } else if (GeometryType === THREE.ConeGeometry) {
+        geometry = new GeometryType(size, size * 2, 32);
+    } else if (GeometryType === THREE.SphereGeometry) {
+        geometry = new GeometryType(size, 16, 16);
+    } else if (GeometryType === THREE.CylinderGeometry) {
+        geometry = new GeometryType(size, size, size * 2, 32);
+    } else if (GeometryType === THREE.BoxGeometry) {
+    } else if (GeometryType === THREE.BoxGeometry) {
+        geometry = new GeometryType(size, size, size);
+    } else {
+        console.error("Invalid Geometry Type");
+        return;
+    }
+
+    if (geometry) {
+        const shape = new THREE.Mesh(geometry, material);
+        shape.position.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+        shapes.push(shape);
+        scene.add(shape);
+
+        // Remove shape after 5 seconds
+        setTimeout(() => {
+            scene.remove(shape);
+            const index = shapes.indexOf(shape);
+            if (index > -1) {
+                shapes.splice(index, 1);
+            }
+        }, 5000);
+    }
+}
+
+function createVoiceWaveform() {
+    const voiceWaveformGeometry = new THREE.BufferGeometry();
+    const voiceWaveformMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const positions = new Float32Array(360 * 3);
+    voiceWaveformGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    voiceWaveform = new THREE.Line(voiceWaveformGeometry, voiceWaveformMaterial);
+    scene.add(voiceWaveform);
+}
+
+function updateVoiceWaveform(pitchBuffer) {
+    const positions = voiceWaveform.geometry.attributes.position.array;
+    const radius = 1.5;
+    const angleStep = (Math.PI * 2) / 360;
+
+    for (let i = 0; i < 360; i++) {
+        const angle = i * angleStep;
+        const x = radius * Math.cos(angle);
+        const z = radius * Math.sin(angle);
+        const y = pitchBuffer[i] * 2; // Scale the waveform height
+
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+    }
+
+    voiceWaveform.geometry.attributes.position.needsUpdate = true;
+}
+
+function updateInstrumentList() {
+    const instrumentList = document.getElementById('instrumentList');
+    instrumentList.innerHTML = 'Instruments:<br>';
+    activeInstruments.forEach((note, instrument) => {
+        instrumentList.innerHTML += `${instrument}: ${note}<br>`;
     });
 }
 
-
-function update() {
-  // Update your application logic here
-  shapes.forEach(shape => {
-      shape.rotation.y += 0.01; // Rotate shapes for example
-  });
-
-  // Ensure audio data availability before updating audio properties
-  const audioData = getAudioData();
-  if (!audioData || audioData.length === 0) {
-      console.warn('No audio data available.');
-      return;
-  }
-
-  // Update audio properties based on shape changes
-  shapes.forEach(shape => {
-      updateAudioProperties(shape);
-  });
+function animate() {
+    renderer.setAnimationLoop(render);
 }
 
 function render() {
     renderer.render(scene, camera);
+}
+
+// Helper functions for pitch detection
+const noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+function noteFromPitch(frequency) {
+    const noteNum = 12 * (Math.log(frequency / 440) / Math.log(2));
+    return Math.round(noteNum) + 69;
+}
+
+// Example functions for XR hand gestures
+function onHandGestureStart(event) {
+    console.log('Hand gesture started:', event);
+}
+
+function onHandGestureEnd(event) {
+    console.log('Hand gesture ended:', event);
+}
+
+function onHandMove(event) {
+    console.log('Hand moved:', event);
+}
+
+function handleVoiceButtonClick(event) {
+    console.log('Voice Button Clicked', event);
+}
+
+function initVoiceRecognition() {
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        
+        recognition.start();
+        recognition.onresult = function(event) {
+            const result = event.results[0][0].transcript;
+            console.log('Speech Recognition Result:', result);
+        };
+    } else {
+        console.log('Speech recognition not supported in this browser.');
+    }
 }
 
 init();
